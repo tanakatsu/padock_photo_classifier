@@ -2,7 +2,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test', type=float, action='store', default=0.1, help='test data ratio')
-parser.add_argument('--uniform', action='store_true', default=False, help='uniform flag')
+parser.add_argument('--even', action='store_true', default=False, help='even flag')
 parser.add_argument('file', type=str, action='store', help='filelist')
 
 args = parser.parse_args()
@@ -46,11 +46,11 @@ for data in train_data:
 
 print('train data size= %d (%d, %d, %d, %d)' % (len(train_data), len(cls_sprint), len(cls_mile), len(cls_middle), len(cls_long)))
 min_num = min([len(cls_sprint), len(cls_mile), len(cls_middle), len(cls_long)])
-if args.uniform:
-    print('train data size(uniformed)= %d (%d, %d, %d, %d)' % (min_num * 4, min_num, min_num, min_num, min_num))
+if args.even:
+    print('train data size(even)= %d (%d, %d, %d, %d)' % (min_num * 4, min_num, min_num, min_num, min_num))
 
 with open('train.txt', 'w') as f:
-    if args.uniform:
+    if args.even:
         cls_sprint = cls_sprint[:min_num]
         cls_mile = cls_mile[:min_num]
         cls_middle = cls_middle[:min_num]
@@ -77,11 +77,11 @@ for data in test_data:
 
 print('test data size= %d (%d, %d, %d, %d)' % (len(test_data), len(cls_sprint), len(cls_mile), len(cls_middle), len(cls_long)))
 min_num = min([len(cls_sprint), len(cls_mile), len(cls_middle), len(cls_long)])
-if args.uniform:
-    print('test data size(uniformed)= %d (%d, %d, %d, %d)' % (min_num * 4, min_num, min_num, min_num, min_num))
+if args.even:
+    print('test data size(even)= %d (%d, %d, %d, %d)' % (min_num * 4, min_num, min_num, min_num, min_num))
 
 with open('test.txt', 'w') as f:
-    if args.uniform:
+    if args.even:
         cls_sprint = cls_sprint[:min_num]
         cls_mile = cls_mile[:min_num]
         cls_middle = cls_middle[:min_num]
