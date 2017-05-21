@@ -11,7 +11,7 @@ import image_dataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', default='train.txt', type=str, help='File name of train data')
-parser.add_argument('--test', default='test.txt', type=str, help='File name of test data')
+parser.add_argument('--test', default='validation.txt', type=str, help='File name of test data')
 parser.add_argument('--root', '-R', default='.', help='Root directory path of image files')
 parser.add_argument('--csv', default=None, help='output csv filename')
 parser.add_argument('--output', '-o', default=None, help='output model filename')

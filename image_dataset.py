@@ -55,6 +55,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
             else:
                 image_array -= self._mean
         label = np.float32(self._pairs[i][1])
+        label = label * 10.0 # rescale to 1.0-10.0
         return image_array, np.array([label], dtype=np.float32)
 
 

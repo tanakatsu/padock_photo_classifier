@@ -8,7 +8,7 @@ from chainer import training
 from chainer.training import extensions
 
 import image_dataset
-import mnist_net
+import net
 
 
 class TestModeEvaluator(extensions.Evaluator):
@@ -24,7 +24,7 @@ class TestModeEvaluator(extensions.Evaluator):
 def main():
     parser = argparse.ArgumentParser(description='Chainer CIFAR example:')
     parser.add_argument('--train', default='train.txt', type=str, help='File name of train data')
-    parser.add_argument('--test', default='test.txt', type=str, help='File name of test data')
+    parser.add_argument('--test', default='validation.txt', type=str, help='File name of validation data')
     parser.add_argument('--root', '-R', default='.', help='Root directory path of image files')
     parser.add_argument('--batchsize', '-b', type=int, default=128,
                         help='Number of images in each mini-batch')
@@ -50,7 +50,7 @@ def main():
     train = image_dataset.ImageDataset(args.train, args.root, max_size=32, mean=args.mean)
     test = image_dataset.ImageDataset(args.test, args.root, max_size=32, mean=args.mean)
 
-    model = L.Classifier(mnist_net.CNN(outputSize=1), lossfun=F.mean_squared_error)
+    model = L.Classifier(net.CNN(outputSize=1), lossfun=F.mean_squared_error)
     model.compute_accuracy = False
 
     if args.gpu >= 0:

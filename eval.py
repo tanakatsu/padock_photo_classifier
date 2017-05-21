@@ -5,8 +5,9 @@ import chainer.functions as F
 import chainer.links as L
 from chainer import Variable
 from chainer import serializers
+import chainer
 
-import mnist_net
+import net
 from PIL import Image
 
 IMAGE_SIZE = 32
@@ -18,14 +19,19 @@ parser.add_argument('--root', '-R', default='.', help='Root directory path of im
 parser.add_argument('-n', type=int, default=None, help='sample numbers')
 parser.add_argument('-s', '--step', type=int, default=1, help='step')
 parser.add_argument('--mean', type=str, default=None, help='mean file (computed by compute_mean.py)')
+parser.add_argument('--gpu', '-g', type=int, default=-1, help='GPU ID (negative value indicates CPU)')
 
 args = parser.parse_args()
 
 # load model
-model = L.Classifier(mnist_net.CNN(), lossfun=F.mean_squared_error)
+model = L.Classifier(net.CNN(), lossfun=F.mean_squared_error)
 model.predictor.train = False
 
 serializers.load_npz(args.model, model)
+
+if args.gpu >= 0:
+    chainer.cuda.get_device(args.gpu).use()
+    model.to_gpu()
 
 if args.mean:
     mean = np.load(args.mean)
@@ -64,12 +70,19 @@ loss_history = []
 d_history = []
 for data in input_data:
     x = data["data"].reshape((1,) + data["data"].shape)
+    if args.gpu >= 0:
+        x = chainer.cuda.cupy.asarray(x, dtype=np.float32)
     score = predict(x)
-    loss = F.mean_squared_error(Variable(np.array(score[0]).astype(np.float32)), Variable(np.array(float(data["score"])).astype(np.float32))).data
-    d = abs(score[0] - float(data["score"]))
+    if args.gpu >= 0:
+        score = chainer.cuda.to_cpu(score)
+    # loss = F.mean_squared_error(Variable(np.array(score[0]).astype(np.float32)), Variable(np.array(float(data["score"])).astype(np.float32))).data
+    loss = F.mean_squared_error(Variable(np.array(score[0]).astype(np.float32)), Variable(np.array(float(data["score"]) * 10.0).astype(np.float32))).data
+    # d = abs(score[0] - float(data["score"]))
+    d = abs(score[0] - float(data["score"]) * 10.0)
     loss_history.append(loss)
     d_history.append(d)
-    print(data["filename"], data["score"], 'score=', score, 'loss=', "%.3f" % loss, 'd=', abs(score[0] - float(data["score"])))
+    # print(data["filename"], data["score"], 'score=', score, 'loss=', "%.3f" % loss, 'd=', abs(score[0] - float(data["score"])))
+    print(data["filename"], float(data["score"]) * 10.0, 'score=', score, 'loss=', "%.3f" % loss, 'd=', abs(score[0] - float(data["score"])))
 
 loss_history = np.array(loss_history)
 d_history = np.array(d_history)

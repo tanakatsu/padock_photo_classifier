@@ -21,9 +21,9 @@ for file in files:
 
     img = Image.open(filepath)
     enhancer = ImageEnhance.Contrast(img)
-    for p in range(10):
+    for p in range(30):
         output_filename = "%s.c-%d%s" % (filename, p + 1, ext)
-        img_out = enhancer.enhance(1 - (p + 1) * 0.05)
+        img_out = enhancer.enhance(1 - (p + 1) * 0.015)
         if not args.dryrun:
             img_out.save(output_filename, 'JPEG')
         print(output_filename)
