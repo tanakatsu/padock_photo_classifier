@@ -75,14 +75,13 @@ for data in input_data:
     score = predict(x)
     if args.gpu >= 0:
         score = chainer.cuda.to_cpu(score)
-    # loss = F.mean_squared_error(Variable(np.array(score[0]).astype(np.float32)), Variable(np.array(float(data["score"])).astype(np.float32))).data
-    loss = F.mean_squared_error(Variable(np.array(score[0]).astype(np.float32)), Variable(np.array(float(data["score"]) * 10.0).astype(np.float32))).data
-    # d = abs(score[0] - float(data["score"]))
-    d = abs(score[0] - float(data["score"]) * 10.0)
+    data["score_n"] = float(data["score"]) * 9.0 + 1.0  # rescale to 1.0-10.0
+    loss = F.mean_squared_error(Variable(np.array(score[0]).astype(np.float32)), Variable(np.array(float(data["score_n"])).astype(np.float32))).data
+    d = abs(score[0] - float(data["score"]))
     loss_history.append(loss)
     d_history.append(d)
-    # print(data["filename"], data["score"], 'score=', score, 'loss=', "%.3f" % loss, 'd=', abs(score[0] - float(data["score"])))
-    print(data["filename"], float(data["score"]) * 10.0, 'score=', score, 'loss=', "%.3f" % loss, 'd=', abs(score[0] - float(data["score"])))
+    modified_score = (score - 1.0) / 9.0  # rescale to 0.0-1.0
+    print(data["filename"], data["score_n"], 'score=', score, data["score"], modified_score[0], 'loss=', "%.3f" % loss, 'd=', abs(score[0] - float(data["score"])))
 
 loss_history = np.array(loss_history)
 d_history = np.array(d_history)

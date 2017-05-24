@@ -13,8 +13,8 @@ class CNN(chainer.Chain):
             conv2=L.Convolution2D(32, 64, 3, initialW=initializer),
             conv3=L.Convolution2D(64, 128, 3, initialW=initializer),
             l1=L.Linear(None, 800, initialW=initializer),
-            l2=L.Linear(800, 1000, initialW=initializer),
-            l3=L.Linear(1000, outputSize, initialW=initializer),
+            l2=L.Linear(800, 400, initialW=initializer),
+            l3=L.Linear(400, outputSize, initialW=initializer),
         )
         self.train = train
 
