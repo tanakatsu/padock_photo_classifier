@@ -16,8 +16,8 @@ def resize(inputfile, outputfile, target_width, target_height):
 #        box = (0, y1, img.width, y2)
 #        img = img.crop(box)
 
-    # resized_img = img.resize((target_width, target_height))
-    resized_img = img.resize((target_width, target_height), resample=Image.LANCZOS)
+    resized_img = img.resize((target_width, target_height))
+    # resized_img = img.resize((target_width, target_height), resample=Image.LANCZOS)
     resized_img.save(outputfile, 'JPEG')
 
 if __name__ == '__main__':

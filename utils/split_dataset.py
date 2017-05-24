@@ -65,8 +65,6 @@ with open('train.txt', 'w') as f:
         cls_sprint = cls_sprint[:min_num]
         cls_mile = cls_mile[:min_num]
         cls_middle = cls_middle[:min_num]
-        # cls_mile = cls_mile[:min_num // 4]
-        # cls_middle = cls_middle[:min_num // 4]
         cls_long = cls_long[:min_num]
 
     for category in [cls_sprint, cls_mile, cls_middle, cls_long]:
