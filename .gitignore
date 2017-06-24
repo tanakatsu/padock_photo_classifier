@@ -79,6 +79,10 @@ data/original/*
 !data/original/.keep
 data/32x32/*
 !data/32x32/.keep
+data/128x128/*
+!data/128x128/.keep
 data/*.txt
+data/*.zip
 utils/*.pkl
-mean.npy
+*.npy
+alexnet.pkl

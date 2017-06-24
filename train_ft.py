@@ -8,7 +8,9 @@ from chainer import training
 from chainer.training import extensions
 
 import image_dataset
-import net
+import alexnet
+import pickle
+import numpy as np
 
 
 class TestModeEvaluator(extensions.Evaluator):
@@ -19,6 +21,49 @@ class TestModeEvaluator(extensions.Evaluator):
         ret = super(TestModeEvaluator, self).evaluate()
         model.predictor.train = True
         return ret
+
+class DelGradient(object):
+    name = 'DelGradient'
+    
+    def __init__(self, delTgt):
+        self.delTgt = delTgt
+
+    def __call__(self, opt):
+        for name, param in opt.target.namedparams():
+            for d in self.delTgt:
+                if d in name:
+                    grad = param.grad
+                    with chainer.cuda.get_device(grad):
+                        grad *= 0
+
+def copy_model(src, dst):
+    # assert isinstance(src, link.Chain)
+    # assert isinstance(dst, link.Chain)
+    assert isinstance(src, chainer.Chain)
+    assert isinstance(dst, chainer.Chain)
+    for child in src.children():
+        if child.name not in dst.__dict__: continue
+        dst_child = dst[child.name]
+        if type(child) != type(dst_child): continue
+        # if isinstance(child, link.Chain):
+        if isinstance(child, chainer.Chain):
+            copy_model(child, dst_child)
+        # if isinstance(child, link.Link):
+        if isinstance(child, chainer.Link):
+            match = True
+            for a, b in zip(child.namedparams(), dst_child.namedparams()):
+                if a[0] != b[0]:
+                    match = False
+                    break
+                if a[1].data.shape != b[1].data.shape:
+                    match = False
+                    break
+            if not match:
+                print('Ignore %s because of parameter mismatch' % child.name)
+                continue
+            for a, b in zip(child.namedparams(), dst_child.namedparams()):
+                b[1].data = a[1].data
+            print('Copy %s' % child.name)
 
 
 def main():
@@ -47,10 +92,13 @@ def main():
     # Set up a neural network to train.
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    train = image_dataset.ImageDataset(args.train, args.root, max_size=32, mean=args.mean)
-    test = image_dataset.ImageDataset(args.test, args.root, max_size=32, mean=args.mean)
+    train = image_dataset.ImageDataset(args.train, args.root, max_size=128, mean=args.mean)
+    test = image_dataset.ImageDataset(args.test, args.root, max_size=128, mean=args.mean)
 
-    model = L.Classifier(net.CNN(outputSize=1), lossfun=F.mean_squared_error)
+    model = L.Classifier(alexnet.FromCaffeAlexnet(1), lossfun=F.mean_squared_error)
+
+    original_model = pickle.load(open('alexnet.pkl', 'rb'))
+    copy_model(original_model, model.predictor)
     model.compute_accuracy = False
 
     if args.gpu >= 0:
@@ -60,6 +108,7 @@ def main():
     optimizer = chainer.optimizers.Adam()
     optimizer.setup(model)
     optimizer.add_hook(chainer.optimizer.WeightDecay(5e-4))
+    optimizer.add_hook(DelGradient(["conv1", "conv2", "conv3", "conv4", "conv5"]))
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
