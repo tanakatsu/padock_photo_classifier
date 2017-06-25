@@ -45,6 +45,8 @@ class FromCaffeAlexnet(chainer.Chain):
         h = self.my_fc8(h)
 
         # for chainer v2.x.x
+        # You don't need to use DelGradient hook.
+
         # with chainer.no_backprop_mode():
         #     h = F.max_pooling_2d(F.local_response_normalization(
         #         F.relu(self.conv1(x))), 3, stride=2)
